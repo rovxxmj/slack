@@ -1,0 +1,7 @@
+.DS_Store
+.idea
+/back/.gitignore
+/back/node_modules
+/back/.env
+/front/.gitignore
+/front/node_modules
