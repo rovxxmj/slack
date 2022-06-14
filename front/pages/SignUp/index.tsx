@@ -55,7 +55,7 @@ const SignUp = () => {
     <Base bgColor={theme.colors.white} textColor={theme.colors.black}>
       <Container>
         <Header gray={theme.colors.gray[400]} link={theme.colors.blue[500]}>
-          <h1>Sign up</h1>
+          <h1>가입하기</h1>
           <p>
             Already have an account? <Link to={'/sign_in'}>Sign In</Link>.
           </p>

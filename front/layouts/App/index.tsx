@@ -16,6 +16,8 @@ const App = () => {
           <Redirect exact path={'/'} to={'/sign_in'} />
           <Route path="/sign_up" component={SignUp} />
           <Route path="/sign_in" component={SignIn} />
+          <Route path="/workspace/:workspace/channel/:channel" component={Workspace} />
+          <Route path="/workspace/:workspace/dm/:id" component={Workspace} />
           <Route path="/workspace/:workspace" component={Workspace} />
         </Switch>
       </ThemeProvider>

@@ -12,13 +12,13 @@ import useSWR from 'swr';
 import { IUser } from '@typings/db';
 import fetcher from '@utils/fetcher';
 
-interface IProps {
+export interface IModal {
   show: boolean;
   onCloseModal(): void;
   showPrev?: boolean;
 }
 
-const Base = styled.div`
+export const Base = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -27,13 +27,12 @@ const Base = styled.div`
   background-color: rgba(0, 0, 0, 0.5);
 `;
 
-const ModalContent = styled.div`
+export const ModalContent = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 500px;
-  min-height: 300px;
   background-color: #fff;
   padding: 20px;
   border-radius: 4px;
@@ -48,7 +47,7 @@ interface IForm {
   workspace: string;
   url: string;
 }
-const CreateWorkspaceModal: FC<IProps> = ({ show, onCloseModal, showPrev }) => {
+const CreateWorkspaceModal: FC<IModal> = ({ show, onCloseModal, showPrev }) => {
   const { workspace: workspaceParams } = useParams<{ workspace?: string }>();
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useRecoilState(isWorkspaceMenuShow);
   const { data: userData, mutate } = useSWR<IUser>('/api/users', fetcher, { dedupingInterval: 2000 });

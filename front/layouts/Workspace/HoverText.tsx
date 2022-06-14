@@ -15,7 +15,11 @@ const Base = styled.div<{ bgColor: string }>`
     visibility: hidden;
     position: absolute;
     z-index: 3000;
-    padding: 10px 12px;
+    padding: 0 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
     background-color: ${({ bgColor }) => bgColor};
     color: #fff;
     font-size: 12px;
@@ -25,7 +29,6 @@ const Base = styled.div<{ bgColor: string }>`
 
   & .component:hover {
     ~ .text {
-      //display: block;
       visibility: visible;
     }
   }

@@ -18,6 +18,11 @@ interface IForm {
 const SignIn = () => {
   const theme = useTheme();
   const { data: userData, mutate } = useSWR('/api/users', fetcher);
+  const { data: channelData, mutate: channelDataMutate } = useSWR(
+    userData ? `/api/workspaces/${userData?.Workspaces[0].url}/channels` : null,
+    fetcher,
+  );
+
   const {
     register,
     handleSubmit,
@@ -42,15 +47,15 @@ const SignIn = () => {
         setError('password', { message: '이메일 주소 혹은 비밀번호를 다시 확인해주세요' });
       });
   }, []);
-  if (userData === undefined) return <div>로딩중...</div>;
-  if (userData) {
-    return <Redirect to={`/workspace/${userData?.Workspaces[0].url}/channel/일반`} />;
+  if (userData === undefined && channelData === undefined) return <div>로딩중...</div>;
+  if (userData && channelData) {
+    return <Redirect to={`/workspace/${userData?.Workspaces[0].url}/channel/${channelData[0].name}`} />;
   }
   return (
     <Base bgColor={theme.colors.white} textColor={theme.colors.black}>
       <Container>
         <Header gray={theme.colors.gray[400]} link={theme.colors.blue[500]}>
-          <h1>Sign in</h1>
+          <h1>로그인</h1>
           <p>
             New to Slack? <Link to={'/sign_up'}>Sign up for an account</Link>.
           </p>

@@ -14,6 +14,8 @@ export interface IChannel {
   name: string;
   private: boolean;
   WorkspaceId: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IChat {

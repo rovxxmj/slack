@@ -21,7 +21,7 @@ import { Link, Route, Switch, Redirect, useParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 const Channel = loadable(() => import('@pages/Channel'));
-const DirectMessage = loadable(() => import('@pages/DirectMessage'));
+const DirectMessage = loadable(() => import('@pages/DM'));
 import styled from '@emotion/styled';
 import { useTheme } from '@emotion/react';
 import { BsPencilSquare } from 'react-icons/bs';
@@ -32,11 +32,12 @@ import ProfileMenu from '@layouts/Workspace/ProfileMenu';
 import loadable from '@loadable/component';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DMList';
-import WorkspaceMenu from '@layouts/Workspace/WorkspaceMenu';
+import WorkspaceMenu from '@components/WorkspaceMenu';
 import AddMessageModal from '@layouts/Workspace/AddMessageModal';
 import { useRecoilState } from 'recoil';
 import { isWorkspaceMenuShow } from '@recoil/atom';
 import CreateWorkspaceModal from '@layouts/Workspace/CreateWorkspaceModal';
+import FavoritesList from '@components/FavoritesList';
 
 export const Header = styled.header<{ bgColor: string; border: string }>`
   height: 40px;
@@ -193,7 +194,7 @@ export const AddMessage = styled.button<{ bgColor: string; hover: string }>`
 
 export const MenuScroll = styled.div`
   height: calc(100vh - 102px);
-  overflow-y: auto;
+  //overflow-y: scroll;
 `;
 
 export const WorkspaceModal = styled.div`
@@ -219,33 +220,58 @@ export const Chats = styled.div`
   flex: 1;
 `;
 
-export const WorkspaceButton = styled.button<{ bgColor: string; border: string; hover: string }>`
-  display: inline-block;
+export const WorkspaceButton = styled.button<{
+  bgColor: string;
+  border: string;
+  hover: string;
+  active: boolean;
+  activeColor: string;
+}>`
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: ${({ bgColor }) => bgColor};
   margin-bottom: 15px;
   font-size: 18px;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
-  border: 3px solid ${({ border }) => border};
+  border: 3px solid ${({ border, active, activeColor }) => (active ? activeColor : border)};
   transition: 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+
+  > .ring {
+    background-color: ${({ bgColor }) => bgColor};
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   &:hover {
-    border: 3px solid ${({ hover }) => hover};
+    border: 3px solid ${({ hover, active, activeColor }) => (active ? activeColor : hover)};
   }
 `;
 
 const Workspace: VFC = () => {
   const theme = useTheme();
+  const { workspace, channel, dm } = useParams<{ workspace?: string; channel?: string; dm?: string }>();
   const { data: userData, mutate } = useSWR<IUser | false>('/api/users', fetcher, { dedupingInterval: 2000 });
   const { data: workspacesData, mutate: workspacesMutate } = useSWR<IWorkspace[]>(
     userData ? `/api/workspaces` : null,
     fetcher,
   );
-  const { workspace } = useParams<{ workspace?: string }>();
+  const { data: memberData, mutate: memberDataMutate } = useSWR<IUser[]>(
+    `/api/workspaces/${workspace}/channels/${channel}/members`,
+    fetcher,
+  );
+
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useRecoilState(isWorkspaceMenuShow);
   const [showAddMessage, setShowAddMessage] = useState(false);
@@ -274,8 +300,9 @@ const Workspace: VFC = () => {
 
   if (userData === undefined) return <div>로딩중...</div>;
   if (!userData) {
-    return <Redirect to={'/sign_up'} />;
+    return <Redirect to={'/sign_in'} />;
   }
+
   return (
     <>
       <Header bgColor={theme.colors.gray[50]} border={theme.colors.gray[100]}>
@@ -290,14 +317,14 @@ const Workspace: VFC = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces bgColor={theme.colors.gray[50]} border={theme.colors.gray[100]}>
-          {userData?.Workspaces?.map((ws) => {
+          {userData?.Workspaces?.map((ws, idx) => {
             return (
-              <Link key={ws.id} to={`/workspace/${ws.url}/channel/일반`}>
+              <Link key={ws.id} to={`/workspace/${ws.url}/channel/${channelData?.[0]?.name}`}>
                 <HoverText
                   text={ws.name}
                   style={{
                     left: '45',
-                    top: 0,
+                    top: '2px',
                     minWidth: `${
                       ws.name.replace(/[0-9]/g, '').length >= 5
                         ? ws.name.replace(/[0-9]/g, '').length * 16
@@ -309,8 +336,10 @@ const Workspace: VFC = () => {
                     bgColor={theme.colors.gray[600]}
                     border={theme.colors.gray[50]}
                     hover={theme.colors.gray[300]}
+                    active={workspace === ws.url}
+                    activeColor={theme.colors.gray[700]}
                   >
-                    {ws.name.slice(0, 1).toUpperCase()}
+                    <div className={'ring'}>{ws.name.slice(0, 1).toUpperCase()}</div>
                   </WorkspaceButton>
                 </HoverText>
               </Link>
@@ -339,15 +368,8 @@ const Workspace: VFC = () => {
             </AddMessage>
           </WorkspaceName>
           <MenuScroll>
-            {/*<Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>*/}
-            {/*  <WorkspaceModal>*/}
-            {/*    <h2>Sleact</h2>*/}
-            {/*    <button onClick={onClickInviteWorkspace}>워크스페이스에 사용자 초대</button>*/}
-            {/*    <button onClick={onClickAddChannel}>채널 만들기</button>*/}
-            {/*    <button onClick={onLogout}>로그아웃</button>*/}
-            {/*  </WorkspaceModal>*/}
-            {/*</Menu>*/}
             <ChannelList />
+            <FavoritesList />
             <DMList />
           </MenuScroll>
         </Channels>
@@ -363,39 +385,8 @@ const Workspace: VFC = () => {
       <WorkspaceMenu show={showWorkspaceMenu} onCloseModal={onCloseModal} style={{ left: '100px' }} />
       <AddMessageModal show={showAddMessage} onCloseModal={onCloseModal} />
       <CreateWorkspaceModal show={showCreateWorkspaceModal} onCloseModal={onCloseModal} />
-      {/*<Modal show={showCreateWorkspaceModal} onCloseModal={onCloseModal}>*/}
-      {/*  <form onSubmit={onCreateWorkspace}>*/}
-      {/*    <Label id="workspace-label">*/}
-      {/*      <span>워크스페이스 이름</span>*/}
-      {/*      <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace} />*/}
-      {/*    </Label>*/}
-      {/*    <Label id="workspace-url-label">*/}
-      {/*      <span>워크스페이스 url</span>*/}
-      {/*      <Input id="workspace" value={newUrl} onChange={onChangeNewUrl} />*/}
-      {/*    </Label>*/}
-      {/*    <Button type="submit">생성하기</Button>*/}
-      {/*  </form>*/}
-      {/*</Modal>*/}
-      {/*<CreateChannelModal*/}
-      {/*  show={showCreateChannelModal}*/}
-      {/*  onCloseModal={onCloseModal}*/}
-      {/*  setShowCreateChannelModal={setShowCreateChannelModal}*/}
-      {/*/>*/}
-      {/*<InviteWorkspaceModal*/}
-      {/*  show={showInviteWorkspaceModal}*/}
-      {/*  onCloseModal={onCloseModal}*/}
-      {/*  setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}*/}
-      {/*/>*/}
-      {/*<InviteChannelModal*/}
-      {/*  show={showInviteChannelModal}*/}
-      {/*  onCloseModal={onCloseModal}*/}
-      {/*  setShowInviteChannelModal={setShowInviteChannelModal}*/}
-      {/*/>*/}
     </>
   );
 };
 
 export default Workspace;
-function isWorkspaceMenuShowAtom(isWorkspaceMenuShowAtom: any): any[] {
-  throw new Error('Function not implemented.');
-}

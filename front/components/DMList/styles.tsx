@@ -8,7 +8,7 @@ export const CollapseButton = styled.button<{ isCollapsed: boolean }>`
   background: transparent;
   border: none;
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px 16px 8px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -20,8 +20,12 @@ export const CollapseButton = styled.button<{ isCollapsed: boolean }>`
   }
 
   > .title {
-    margin-left: 5px;
-    font-size: 15px;
+    margin-left: 6px;
+    font-size: 14px;
     font-weight: 600;
   }
+`;
+
+export const Container = styled.div`
+  //padding: 0 20px;
 `;

@@ -19,11 +19,13 @@ import {
   WorkspaceMenuItems,
 } from '@layouts/Workspace/ProfileMenu';
 import HoverText from '@layouts/Workspace/HoverText';
-import CreateWorkspaceModal from '@layouts/Workspace/CreateWorkspaceModal';
 import { MdOutlineKeyboardArrowRight } from 'react-icons/md';
 import HoverMenu from '@layouts/Workspace/HoverMenu';
 import { IUser, IWorkspace } from '@typings/db';
-import MyWorkspaces from '@layouts/Workspace/WorkspaceMenu/MyWorkspaces';
+import MyWorkspaces from '@components/WorkspaceMenu/MyWorkspaces';
+import CreateWorkspaceModal from '@layouts/Workspace/CreateWorkspaceModal';
+import CreateChannelModal from '@layouts/Workspace/CreateChannelModal';
+import InviteWorkspaceModal from '@layouts/Workspace/InviteWorkspaceModal';
 
 const WorkspaceMenu: FC<IMenu> = ({ show, onCloseModal }) => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -32,11 +34,19 @@ const WorkspaceMenu: FC<IMenu> = ({ show, onCloseModal }) => {
 
   const [active, setActive] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
+  const [showInviteWorkspaceModal, setInviteWorkspaceModal] = useState(false);
   const onClickActive = useCallback(() => {
     setActive((prev) => !prev);
   }, []);
   const onClickCreateWorkspace = useCallback(() => {
     setShowCreateWorkspaceModal((prev) => !prev);
+  }, []);
+  const onClickCreateChannel = useCallback(() => {
+    setShowCreateChannelModal((prev) => !prev);
+  }, []);
+  const onClickInviteWorkspace = useCallback(() => {
+    setInviteWorkspaceModal((prev) => !prev);
   }, []);
 
   const onLogout = useCallback(() => {
@@ -51,6 +61,8 @@ const WorkspaceMenu: FC<IMenu> = ({ show, onCloseModal }) => {
   const onCloseAll = useCallback(() => {
     onCloseModal();
     setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+    setInviteWorkspaceModal(false);
   }, []);
 
   if (!userData) return <Redirect to={'/sign_in'} />;
@@ -69,12 +81,14 @@ const WorkspaceMenu: FC<IMenu> = ({ show, onCloseModal }) => {
               </ProfileCard>
             </HoverText>
             <MenuItems border={theme.colors.gray[100]}>
-              <MenuItem hover={theme.colors.gray[100]}>
+              <MenuItem hover={theme.colors.gray[100]} onClick={onClickInviteWorkspace}>
                 <span>
                   <strong>{userData?.Workspaces.find((v) => v.url === workspace)?.name}</strong>에 사용자 초대
                 </span>
               </MenuItem>
-              <MenuItem hover={theme.colors.gray[100]}>채널 생성</MenuItem>
+              <MenuItem hover={theme.colors.gray[100]} onClick={onClickCreateChannel}>
+                채널 생성
+              </MenuItem>
             </MenuItems>
             <MenuItems border={theme.colors.gray[100]}>
               <MenuItem hover={theme.colors.gray[100]}>환경설정</MenuItem>
@@ -110,6 +124,8 @@ const WorkspaceMenu: FC<IMenu> = ({ show, onCloseModal }) => {
         </MenuContent>
       </Menu>
       <CreateWorkspaceModal show={showCreateWorkspaceModal} onCloseModal={onCloseAll} showPrev />
+      <CreateChannelModal show={showCreateChannelModal} onCloseModal={onCloseAll} showPrev />
+      <InviteWorkspaceModal show={showInviteWorkspaceModal} onCloseModal={onCloseAll} showPrev />
     </>
   );
 };
